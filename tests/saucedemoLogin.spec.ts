@@ -1,19 +1,25 @@
 import { Page, expect, test } from "@playwright/test";
 import Base from "../pages/base";
-import { assert } from "console";
+import Login from "../pages/login.page";
+import Home from "../pages/home.page";
 
 let page: Page;
 let base = new Base();
+let loginPage: Login;
+let homePage: Home;
 
-test("Valid user is able to Login", async () => {
-  page = await base.initBrowser();
-  await page.goto("https://www.saucedemo.com/");
+test.describe("Sauce Demo", async () => {
+  test.beforeEach(async ({}) => {
+    page = await base.initBrowser();
+    await base.navigateToSauceDemo(page);
+    loginPage = new Login(page);
+    homePage = new Home(page);
+  });
 
-  await page.locator("#user-name").fill("standard_user");
-  await page.getByPlaceholder("Password").fill("secret_sauce");
-  await page.locator("[data-test='login-button']").click();
-
-  await expect(page.locator("#shopping_cart_container")).toBeVisible();
-
+  test("Valid user is able to Login", async () => {
+    await loginPage.fillUserName(process.env.USER_NAME!);
+    await loginPage.fillPasswordName(process.env.USER_PASSWORD!);
+    await loginPage.clickLoginButton();
+    await expect(await homePage.getShoppingCart()).toBeVisible();
+  });
 });
-
